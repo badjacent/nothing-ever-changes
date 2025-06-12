@@ -1,34 +1,21 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 16.10.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "resourceClass": "m1-medium"
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "ios": {
-        "resourceClass": "m1-medium"
-      }
+      "distribution": "internal"
     },
     "production": {
-      "ios": {
-        "resourceClass": "m1-medium"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-        "appleId": "mh.next@gmail.com",
-        "ascAppId": "6747187198",
-        "appleTeamId": "RW5BVGDRL5"
-      }
-    }
+    "production": {}
   }
 }
