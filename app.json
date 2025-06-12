@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "nothing ever changes",
+    "slug": "nothing-ever-changes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hollerson.nothing",
+      "buildNumber": "1"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ce91a87b-7c08-4f0c-a4ee-8e1168ac7aee"
+      }
+    }
+  }
+}
