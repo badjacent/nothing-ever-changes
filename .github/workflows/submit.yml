@@ -24,9 +24,12 @@ jobs:
 
       - name: Debug EAS Project Info
         run: |
-          eas whoami
-          eas project:info
-          eas build:list --limit=5
+          echo "=== EAS User Info ==="
+          eas whoami || echo "Not logged in"
+          echo "=== Project Info ==="
+          eas project:info --non-interactive || echo "No project found"
+          echo "=== Recent Builds ==="  
+          eas build:list --limit=3 --json --non-interactive || echo "No builds found"
 
       - name: Submit to TestFlight
         run: |
