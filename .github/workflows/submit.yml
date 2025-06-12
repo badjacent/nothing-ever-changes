@@ -24,9 +24,9 @@ jobs:
 
       - name: Debug EAS Project Info
         run: |
-        eas whoami
-        eas project:info
-        eas build:list --limit=5
+          eas whoami
+          eas project:info
+          eas build:list --limit=5
 
       - name: Submit to TestFlight
         run: |
