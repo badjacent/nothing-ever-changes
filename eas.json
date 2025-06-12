@@ -12,10 +12,21 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "resourceClass": "m1-medium"
+      }
+
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "mh.next@gmail.com",
+        "ascAppId": "6747187198",
+        "appleTeamId": "RW5BVGDRL5"
+      }
+
+    }
   }
 }
