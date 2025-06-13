@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Build on EAS
-        run: eas build --platform ios --non-interactive --profile preview
+        run: eas build --platform ios --non-interactive --profile production --wait
 
       # Optional: Auto-submit to TestFlight
       # - name: Submit to TestFlight
