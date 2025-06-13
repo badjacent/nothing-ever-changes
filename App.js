@@ -1,28 +1,38 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import LottieView from 'lottie-react-native';
 
-// Keep the splash screen visible while we fetch resources
+// Keep the splash screen visible while we set up
 SplashScreen.preventAutoHideAsync();
 
+// Your existing StaticGrid component for the modal
 const { width, height } = Dimensions.get('window');
-const GRID_SIZE = 8; // Size of each static "pixel"
+const GRID_SIZE = 8;
 const COLS = Math.ceil(width / GRID_SIZE);
 const ROWS = Math.ceil(height / GRID_SIZE);
 
 function generateStaticGrid() {
   const grid = [];
   for (let i = 0; i < ROWS * COLS; i++) {
-    // Random grayscale value
     const gray = Math.floor(Math.random() * 256);
     grid.push(gray);
   }
   return grid;
 }
 
-function StaticGrid({ grid }) {
+function StaticGrid() {
+  const [grid, setGrid] = useState(() => generateStaticGrid());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGrid(generateStaticGrid());
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <View style={styles.staticContainer}>
       {grid.map((gray, index) => (
@@ -38,81 +48,181 @@ function StaticGrid({ grid }) {
   );
 }
 
-export default function App() {
-  const [isReady, setIsReady] = useState(false);
-  const [showStatic, setShowStatic] = useState(true);
-  const [staticGrid, setStaticGrid] = useState(() => generateStaticGrid());
+// Custom Lottie Splash Screen Component
+function LottieSplashScreen({ onFinish }) {
+  const [animationFinished, setAnimationFinished] = useState(false);
 
-  // Animate the static effect
   useEffect(() => {
-    if (!showStatic) return;
-    
-    const interval = setInterval(() => {
-      setStaticGrid(generateStaticGrid());
-    }, 200); // Update every 50ms for smooth static effect
-
-    // Hide static after 3 seconds
+    // Auto-finish splash after 3 seconds as backup
     const timeout = setTimeout(() => {
-      setShowStatic(false);
-      SplashScreen.hideAsync();
+      if (!animationFinished) {
+        onFinish();
+      }
     }, 3000);
 
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [showStatic]);
+    return () => clearTimeout(timeout);
+  }, [animationFinished, onFinish]);
 
-  const onLayoutRootView = useCallback(async () => {
-    if (isReady) {
-      // This tells the splash screen to hide immediately
-      await SplashScreen.hideAsync();
-    }
-  }, [isReady]);
+  return (
+    <View style={styles.splashContainer}>
+      <LottieView
+        source={require('./assets/animation.json')} // Your Lottie file here
+        autoPlay
+        loop={false} // Set to true if you want it to loop
+        style={styles.lottieAnimation}
+        onAnimationFinish={() => {
+          setAnimationFinished(true);
+          onFinish();
+        }}
+      />
+      
+      {/* Optional: Add your app text over the animation */}
+      <View style={styles.splashTextContainer}>
+        <Text style={styles.splashText}>nothing ever changes</Text>
+      </View>
+      
+      <StatusBar style="light" />
+    </View>
+  );
+}
 
+export default function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [showLottieSplash, setShowLottieSplash] = useState(true);
+  const [showStaticModal, setShowStaticModal] = useState(false);
+
+  // Prepare app resources
   useEffect(() => {
     async function prepare() {
       try {
-        // Pre-load fonts, make any API calls you need to do here
-        // await Font.loadAsync(Entypo.font);
-        
-        // Artificially delay for 2 seconds to simulate a slow loading experience
+        // Preload any resources here
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (e) {
         console.warn(e);
       } finally {
-        // Tell the application to render
-        setIsReady(true);
+        setIsAppReady(true);
       }
     }
 
     prepare();
   }, []);
 
-  if (showStatic) {
+  const onLayoutRootView = useCallback(async () => {
+    if (isAppReady && !showLottieSplash) {
+      // This tells the default splash screen to hide
+      await SplashScreen.hideAsync();
+    }
+  }, [isAppReady, showLottieSplash]);
+
+  const handleSplashFinish = useCallback(() => {
+    setShowLottieSplash(false);
+  }, []);
+
+  // Show Lottie splash screen
+  if (showLottieSplash) {
     return (
-      <View style={styles.container}>
-        <StaticGrid grid={staticGrid} />
-        <StatusBar style="light" />
-      </View>
+      <LottieSplashScreen onFinish={handleSplashFinish} />
     );
   }
 
-  if (!isReady) {
+  // App not ready yet
+  if (!isAppReady) {
     return null;
   }
 
+  // Main app
   return (
-    <View style={styles.appContainer} onLayout={onLayoutRootView}>
-      <Text style={styles.text}>nothing ever changes</Text>
+    <View style={styles.container} onLayout={onLayoutRootView}>
+      {/* Main App Screen */}
+      <TouchableOpacity 
+        style={styles.mainContent}
+        onPress={() => setShowStaticModal(true)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.text}>nothing ever changes</Text>
+        <Text style={styles.subtitle}>tap to see static</Text>
+      </TouchableOpacity>
+
+      {/* Static Modal (your existing modal) */}
+      {showStaticModal && (
+        <View style={styles.staticModalContainer}>
+          <StaticGrid />
+          
+          <TouchableOpacity 
+            style={styles.closeArea}
+            onPress={() => setShowStaticModal(false)}
+            activeOpacity={1}
+          >
+            <View style={styles.closeButton}>
+              <Text style={styles.closeText}>tap to close</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <StatusBar style="auto" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Lottie Splash Screen
+  splashContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lottieAnimation: {
+    width: width,
+    height: height,
+    backgroundColor: '#000',
+  },
+  splashTextContainer: {
+    position: 'absolute',
+    bottom: 100,
+    alignItems: 'center',
+  },
+  splashText: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+
+  // Main App
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  mainContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: '300',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+
+  // Static Modal (same as before)
+  staticModalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#000',
   },
   staticContainer: {
@@ -126,14 +236,25 @@ const styles = StyleSheet.create({
     width: GRID_SIZE,
     height: GRID_SIZE,
   },
-  appContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
+  closeArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  text: {
-    fontSize: 24,
+  closeButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginBottom: 50,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '300',
   },
 });
