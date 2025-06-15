@@ -9,14 +9,25 @@ SplashScreen.preventAutoHideAsync();
 
 // Your existing StaticGrid component for the modal
 const { width, height } = Dimensions.get('window');
-const GRID_SIZE = 8;
+const GRID_SIZE = 4;
 const COLS = Math.ceil(width / GRID_SIZE);
 const ROWS = Math.ceil(height / GRID_SIZE);
 
 function generateStaticGrid() {
   const grid = [];
+  
+  // Calculate sine wave for intensity (1 second cycle)
+  const timeInSeconds = Date.now() / 5000;
+  const sineValue = Math.sin(2 * Math.PI * timeInSeconds); // -1 to 1
+  
+  // Map sine wave (-1 to 1) to intensity range (150 to 250)
+  const minIntensity = 150;
+  const maxIntensity = 250;
+  const intensityRange = maxIntensity - minIntensity;
+  const currentMaxGray = minIntensity + (sineValue + 1) / 2 * intensityRange;
+  
   for (let i = 0; i < ROWS * COLS; i++) {
-    const gray = Math.floor(Math.random() * 256);
+    const gray = Math.floor(Math.random() * currentMaxGray);
     grid.push(gray);
   }
   return grid;
@@ -140,7 +151,7 @@ export default function App() {
         activeOpacity={0.7}
       >
         <Text style={styles.text}>nothing ever changes</Text>
-        <Text style={styles.subtitle}>tap to see static</Text>
+        {/* <Text style={styles.subtitle}>tap to see static</Text> */}
       </TouchableOpacity>
 
       {/* Static Modal (your existing modal) */}
